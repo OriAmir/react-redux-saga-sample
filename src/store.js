@@ -1,27 +1,33 @@
 import { createStore, applyMiddleware, combineReducers } from "redux";
 import createSagaMiddleware from "redux-saga";
-import apiSaga from "./apiSaga";
+// import apiSaga from "./saga/apiSaga";
+import rootSaga from './saga';
+import { GET_EXAMPLE } from './actions';
 
-function counter(state = 0, action) {
+function main(state = { counter: 0, data: null }, action) {
+  debugger;
   switch (action.type) {
     case "INCREMENT":
-      return state + 1;
+      return { ...state, counter: state.counter + 1 }
     case "DECREMENT":
-      return state - 1;
-    case "API_RESPONSE":
+      return { ...state, counter: state.counter - 1 }
+    case GET_EXAMPLE.success:
       debugger;
-      return state;
+      return { ...state, data: action.payload.data }
     default:
       return state;
   }
 }
 
 const rootReducer = combineReducers({
-  counter
+  main
 });
 
+
 const sagaMiddleware = createSagaMiddleware();
-const store = createStore(rootReducer, applyMiddleware(sagaMiddleware));
-sagaMiddleware.run(apiSaga);
+const middlewares = [sagaMiddleware];
+
+const store = createStore(rootReducer, {}, applyMiddleware(...middlewares));
+sagaMiddleware.run(rootSaga);
 
 export default store;
