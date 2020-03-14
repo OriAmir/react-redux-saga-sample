@@ -1,6 +1,6 @@
-import { put, takeEvery } from 'redux-saga/effects';
+import { put, takeEvery,delay } from 'redux-saga/effects';
 import axios from 'axios';
-import { createAction } from 'redux-actions';
+import { addLoader, removeLoader } from '../components/loader/loading-actions';
 
 const defaultNextType = {
   pending: 'REQUEST_PENDING',
@@ -10,11 +10,13 @@ const defaultNextType = {
 
 function* fetchData(action) {
   const nextActionType = action.payload.nextActionType || defaultNextType;
-  debugger;
+  const loaderId = nextActionType.pending.replace('_PENDING', '');
   try {
     // const headers = authService.getHeaders(authorizationToken);
-    yield put(createAction(nextActionType.pending, () => action, () => action.meta)());
-
+    yield put({type:nextActionType.pending,meta:action.meta});
+    if (action.meta && action.meta.hasLoader) {
+      yield put(addLoader(loaderId));
+    }
     let reqObj = {
       method: action.payload.method,
       url: action.payload.url,
@@ -26,9 +28,13 @@ function* fetchData(action) {
     }
 
     const fetchResult = yield axios(reqObj);
-    yield put(createAction(nextActionType.success, () => fetchResult, () => action.meta)(fetchResult));
+    yield delay(5000)
+
+    yield put({type:nextActionType.success,payload:fetchResult,meta:action.meta});
+    yield put(removeLoader(loaderId));
   } catch (e) {
-    yield put(createAction(nextActionType.error, () => e, () => action.meta)(e));
+    yield put(removeLoader(loaderId));
+    yield put({type:nextActionType.error,payload:e,meta:action.meta});
   }
 }
 

@@ -1,10 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
 import App from "./components/App";
 import * as serviceWorker from "./serviceWorker";
 import { Provider } from "react-redux";
 import store from "./store";
+import 'react-redux-toastr/lib/css/react-redux-toastr.min.css'
 
 ReactDOM.render(
   <Provider store={store}>
